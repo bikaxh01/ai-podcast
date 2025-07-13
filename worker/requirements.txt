@@ -2,3 +2,9 @@ langchain
 langchain_community
 pypdf
 langchain-google-genai
+langchain_google_community
+google-genai
+pydantic
+langchain_openai
+pydub
+cloudinary
