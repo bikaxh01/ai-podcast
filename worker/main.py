@@ -2,7 +2,7 @@ import cloudinary.uploader
 from langchain_community.document_loaders import PyPDFLoader
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain.prompts import PromptTemplate
-from utils.sample import generate
+from utils.utils import generate
 from dotenv import load_dotenv
 from langchain_core.output_parsers import PydanticOutputParser
 from langchain_openai import AzureChatOpenAI
@@ -15,18 +15,19 @@ import os
 
 load_dotenv()
 API_KEY = os.getenv("GEMINI_API")
-
-AZURE_OPENAI_API_KEY = os.getenv("AZURE_OPENAI_API_KEY")
-ENDPOINT = os.getenv("Endpoint")
-VERSION = os.getenv("VERSION")
+CLOUD_NAME = os.getenv("CLOUD_NAME")
+CLOUDINARY_API_KEY = os.getenv("CLOUDINARY_API_KEY")
+CLOUDINARY_API_SECRET = os.getenv("CLOUDINARY_API_SECRET")
 
 # project_data = {
+# "id":"VSD34F5X9",
 #     "prompt": "Make also conver what are ai agents",
 #     "docKey": "mypdf.pdf",
 #     "docUrl": "https://proceedings.neurips.cc/paper_files/paper/2017/file/3f5ee243547dee91fbd053c1c4a845aa-Paper.pdf",
 # }
 
 project_data = {
+    "id": "VSD34F5X9",
     "prompt": "Generate a begineer friendly podcast on docker and k8s",
     "docKey": "",
     "docUrl": "https://proceedings.neurips.cc/paper_files/paper/2017/file/3f5ee243547dee91fbd053c1c4a845aa-Paper.pdf",
@@ -226,36 +227,53 @@ async def generate_podcast(script: List[str]):
     return file_names
 
 
-def merge_media_files(files: list[str]):
-  
-    merged_audio  = AudioSegment.from_file(f"./media/{files[0]}",format="wav")
+def merge_media_files(files: list[str], project_id: str):
+
+    merged_audio = AudioSegment.from_file(f"./media/{files[0]}", format="wav")
     for file in files[1:]:
         audio_data = AudioSegment.from_file(f"./media/{file}", format="wav")
         merged_audio += audio_data
-    merged_audio.export("./media/final.wav", format="wav")
+    merged_audio.export(f"./media/{project_id}_final.wav", format="wav")
     print("Audio files merged successfully!")
-    return "./media/final.wav"
+    return f"{project_id}_final"
 
 
-def upload_media(media_path:str):
-    config  = cloudinary.config(secure=True)
-    cloudinary.uploader.upload("./")
+def upload_media(file_name: str,project_id:str):
+
+    cloudinary.config(
+        secure_url=True,
+        cloud_name=CLOUD_NAME,
+        api_key=CLOUDINARY_API_KEY,
+        api_secret=CLOUDINARY_API_SECRET,
+    )
+    res = cloudinary.uploader.upload_large(
+        f"./media/{file_name}.wav",
+        resource_type="video",
+        public_id=file_name,
+        folder=f"EchoMind/{project_id}",
+    )
+    print(res["secure_url"])
+    return res["secure_url"]
+
 
 async def main():
-    content = get_final_content()
-    #  generate role based script
-    podcast_script = generate_podcast_script(content)
-    print(f"POdcast script on user prompt 🚀 \n {podcast_script} \n")
-    print(f"Podcast script length {len(podcast_script)} 🔥")
-    files = await generate_podcast(podcast_script)
-    final_media = merge_media_files(files)
-    
-    
-    
-    #  Generate content audio
-    #  push to store
+    try:
+        content = get_final_content()
+        #  generate role based script
+        podcast_script = generate_podcast_script(content)
+
+     
+        print(f"Podcast script length {len(podcast_script)} 🔥")
+        files = await generate_podcast(podcast_script)
+        final_media = merge_media_files(files,project_data["id"])
+        media_url = upload_media(final_media,project_data["id"])
+        print(media_url)
+        os._exit(1)
+    except Exception as e:
+        print("Something went wrong \n",e)
+        os._exit(1)
+    # update the link and dialogs in db
+    # Kill self
 
 
-upload_media("d")
-
-# asyncio.run(main())
+asyncio.run(main())
