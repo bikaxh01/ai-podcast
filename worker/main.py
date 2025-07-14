@@ -6,26 +6,29 @@ from utils.utils import (
     generate_podcast,
     merge_media_files,
     upload_media,
+    ProjectData
 )
 import asyncio
+import ast
 import os
 
 load_dotenv()
 
+id = os.getenv("PROJECT_ID")
 
+#get_data
 project_data = {
-"id":"VSD34F5X9CCCC",
-    "prompt": "Make also conver what are ai agents",
-    "docKey": "mypdf.pdf",
+    "id": "Bikaxh12",
+    "prompt": "Generate a begineer friendly podcast on docker and k8s",
+    "docKey": "",
     "docUrl": "https://proceedings.neurips.cc/paper_files/paper/2017/file/3f5ee243547dee91fbd053c1c4a845aa-Paper.pdf",
 }
 
-# project_data = {
-#     "id": "VSD34X9",
-#     "prompt": "Generate a begineer friendly podcast on docker and k8s",
-#     "docKey": "",
-#     "docUrl": "https://proceedings.neurips.cc/paper_files/paper/2017/file/3f5ee243547dee91fbd053c1c4a845aa-Paper.pdf",
-# }
+
+
+print(id)
+
+
 
 
 async def main():
@@ -41,10 +44,12 @@ async def main():
     # update the link and dialogs in db
         
         print(media_url)
-        shutil.rmtree("./media")     
+        shutil.rmtree("./media") 
+        os._exit(0)    
     except Exception as e:
         print("Something went wrong \n", e)
         shutil.rmtree("./media",ignore_errors=True)   
+        os._exit(0)    
         
         
     
