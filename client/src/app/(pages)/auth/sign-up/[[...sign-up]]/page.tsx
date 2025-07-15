@@ -2,7 +2,7 @@ import { SignUp } from "@clerk/nextjs";
 import React from "react";
 
 function page() {
-  return <SignUp />;
+  return <SignUp  />;
 }
 
 export default page;
