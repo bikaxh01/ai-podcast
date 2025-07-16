@@ -7,6 +7,7 @@ from fastapi import (
     File,
     UploadFile,
 )
+from pydantic import BaseModel
 from fastapi.responses import JSONResponse
 from svix.webhooks import Webhook
 from sqlmodel import Session
@@ -15,10 +16,10 @@ from typing import Annotated
 from fastapi.middleware.cors import CORSMiddleware
 from clerk_backend_api import Clerk, AuthenticateRequestOptions
 
-from Db.db import connect_Db, engine, User, Podcast
+from Db.db import connect_Db, engine, User, Podcast, Podcast_status
 from dotenv import load_dotenv
 import os
-import cloudinary
+
 
 from utils.utils import upload_file, push_redis
 
@@ -92,8 +93,10 @@ def get_project_by_id(podcast_id: str, session: Session = Depends(get_session)):
     podcast_data = session.get(Podcast, podcast_uuid)
     if not podcast_data:
         return JSONResponse(status_code=404, content={"message": "No podcast found"})
+    podcast_data.id = str(podcast_data.id)
+    podcast_data.created_at = str(podcast_data.created_at)
     return JSONResponse(
-        status_code=200, content={"message": "podcast found", "data": podcast_data}
+        status_code=200, content={"message": "podcast found", "data": podcast_data.model_dump()}
     )
 
 
@@ -132,9 +135,10 @@ async def create_project(
             },
         )
     except Exception as e:
+        print(e)
         return JSONResponse(
             status_code=500,
-            content={"success": False, "message": "something went wrong", "data": ""},
+            content={"success": False, "message": "something went wrong", "data": str(e)},
         )
 
 
@@ -167,4 +171,46 @@ async def save_user(request: Request, session: Session = Depends(get_session)):
         return JSONResponse(
             status_code=501,
             content={"status": "false", "message": "something went wrong"},
+        )
+
+
+class Update_podcast(BaseModel):
+
+    title: str | None = None
+    description: str | None = None
+    status: Podcast_status
+    audio_url: str | None = None
+
+
+@app.put("/internal/update-podcast/{podcast_id}")
+def update_podcast(
+    podcast_id: str,
+    podcast_data: Update_podcast,
+    session: Session = Depends(get_session),
+):
+    try:
+        podcast_id = uuid.UUID(podcast_id)
+        podcast = session.get(Podcast, podcast_id)
+        
+        if not podcast:
+             return JSONResponse(
+            status_code=404,
+            content={"status": False, "message": "invalid podcast id"},
+        )
+        final_podcast = podcast_data.model_dump(exclude_unset=True)
+        podcast.sqlmodel_update(final_podcast)
+        session.add(podcast)
+        session.commit()
+        session.refresh(podcast)
+        podcast.id = str(podcast.id)
+        podcast.created_at = str(podcast.created_at)
+        return JSONResponse(
+            status_code=200,
+            content={"status": True, "message": "Updated successfully","data":podcast.model_dump()},
+        )
+    except Exception as e:
+        print("Error: ", e)
+        return JSONResponse(
+            status_code=501,
+            content={"status": False, "message": "something went wrong"},
         )

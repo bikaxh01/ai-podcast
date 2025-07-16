@@ -10,9 +10,10 @@ from langchain_community.document_loaders import PyPDFLoader
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain.prompts import PromptTemplate
 from langchain_core.output_parsers import PydanticOutputParser
-from typing import List
+from typing import List, Any
 from pydub import AudioSegment
 from pydantic import BaseModel, Field
+import requests
 
 load_dotenv()
 
@@ -188,7 +189,7 @@ Include:
     )
     chain = prompt | model
     final_content = chain.invoke({"user_prompt": user_prompt}).content
-   
+
     return final_content
 
 
@@ -267,16 +268,15 @@ Format the output as natural, high-quality spoken audio suitable for a professio
 
 class ProjectData(BaseModel):
     id: str
-    docKey: str |None
-    docUrl: str | None
+    file_url: str | None
     prompt: str
 
 
-def get_final_content(project_data:ProjectData):
-    
-    if project_data["docKey"] and project_data["docUrl"]:
+def get_final_content(project_data: ProjectData):
+
+    if project_data["file_url"]:
         print("Parsing the doc")
-        raw_data = parse_doc(project_data["docUrl"])
+        raw_data = parse_doc(project_data["file_url"])
         filtered_content = document_filter(raw_data, project_data["prompt"])
         return filtered_content
     else:
@@ -292,6 +292,8 @@ class PodcastResponseFormat(BaseModel):
     Guest: [Clear, detailed explanation with examples]
     """
 
+    title: str = Field(description="short title for the podcast")
+    description: str = Field(description="short description of podcast")
     response: List[str] = Field(
         description="This response list should contain the content eg: Host: [Beginner-friendly question or comment] or  Guest: [Clear, detailed explanation with examples] "
     )
@@ -336,6 +338,7 @@ Content:
         """,
         input_variables=["content"],
     )
+
     model = ChatGoogleGenerativeAI(
         model="gemini-2.5-flash",
         google_api_key=API_KEY,
@@ -347,12 +350,12 @@ Content:
     chain = prompt | model_with_structure
     parser = PydanticOutputParser(pydantic_object=PodcastResponseFormat)
     final_content = chain.invoke({"content": content})
-    return final_content.response
+    return final_content
 
 
 async def generate_podcast(script: List[str]):
     finalScript = [" ".join(script[i : i + 20]) for i in range(0, len(script), 20)]
- 
+
     tasks = [generate(sc, i) for i, sc in enumerate(finalScript)]
     results = await asyncio.gather(*tasks)
     file_names = list(results)
@@ -384,5 +387,20 @@ def upload_media(file_name: str, project_id: str):
         public_id=file_name,
         folder=f"EchoMind/{project_id}",
     )
-  
+
     return res["secure_url"]
+
+
+def update_project(project_id: str, data: Any):
+    server_url = os.getenv("SERVER_URL")
+    headers = {"Content-Type": "application/json"}
+    response = requests.put(
+        f"{server_url}/internal/update-podcast/{project_id}", json=data, headers=headers
+    )
+
+    if response.status_code == 200:
+        data = response.json()
+
+        return data["data"]
+    else:
+        print(f"Request failed with status code: {response.status_code}")

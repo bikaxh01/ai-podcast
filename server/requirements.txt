@@ -7,3 +7,5 @@ svix
 python-multipart
 cloudinary
 redis
+alembic
+psycopg2

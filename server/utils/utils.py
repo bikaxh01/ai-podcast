@@ -38,8 +38,7 @@ async def upload_file(file: Annotated[UploadFile, File()], podcast_id: str):
     with open(file_path, "wb") as f:
         f.write(content)
 
-    print("File path", file_path)
-    print("File path", f"{podcast_id}_{file.filename}")
+
     res = cloudinary.uploader.upload(
         file_path,
         public_id=f"{podcast_id}",
