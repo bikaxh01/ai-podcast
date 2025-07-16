@@ -22,17 +22,17 @@ class Podcast_status(str, Enum):
     PENDING = "PENDING"
     PROCESSING = "PROCESSING"
     COMPLETED = "COMPLETED"
-    ERROR = "ERROR"
+    FAILED = "FAILED"
 
 
 class Podcast(SQLModel, table=True):
     id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
-    title: str
-    description: str
+    title: Optional[str] = None
+    description: Optional[str] = None
     status: Podcast_status = Field(default=Podcast_status.PENDING)
-    audio_url: Optional[str]
-    file_url: Optional[str]
-    prompt: Optional[str]
+    audio_url: Optional[str] = None
+    file_url: Optional[str] = None
+    prompt: Optional[str] = None
     user_id: str = Field(foreign_key="user.id")
     created_at: datetime = Field(default_factory=lambda: datetime.now())
 

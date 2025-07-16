@@ -5,3 +5,5 @@ psycopg2
 clerk-backend-api
 svix
 python-multipart
+cloudinary
+redis

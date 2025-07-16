@@ -1,7 +1,6 @@
 from fastapi import (
     FastAPI,
     Depends,
-    Body,
     Request,
     HTTPException,
     Form,
@@ -10,16 +9,18 @@ from fastapi import (
 )
 from fastapi.responses import JSONResponse
 from svix.webhooks import Webhook
-from sqlmodel import Session, select
+from sqlmodel import Session
 import uuid
 from typing import Annotated
 from fastapi.middleware.cors import CORSMiddleware
-from clerk_backend_api import authenticate_request, Clerk, AuthenticateRequestOptions
-from typing import Any
+from clerk_backend_api import Clerk, AuthenticateRequestOptions
+
 from Db.db import connect_Db, engine, User, Podcast
 from dotenv import load_dotenv
 import os
-from models.model import Podcast_model
+import cloudinary
+
+from utils.utils import upload_file, push_redis
 
 load_dotenv()
 app = FastAPI()
@@ -99,22 +100,42 @@ def get_project_by_id(podcast_id: str, session: Session = Depends(get_session)):
 @app.post("/create-podcast", dependencies=[Depends(validate_user)])
 async def create_project(
     request: Request,
-    file: Annotated[UploadFile, File()],
     prompt: Annotated[str, Form()],
+    file: Annotated[UploadFile, File()] = None,
     session: Session = Depends(get_session),
 ):
-    user_id = request.state.user_id
-    print("User Id:", user_id)
-    print("User Id:", prompt)
-    content =  file.read()
-    
-    # upload doc
-    # generate title and description
+    try:
+        user_id = request.state.user_id
+        podcast_id = uuid.uuid4()
 
-    # add to redis
-    # add to bd
-    # session.add(podcast)
-    return JSONResponse(status_code=200, content={"message": " podcast found"})
+        podcast = Podcast(id=podcast_id, user_id=user_id, prompt=prompt)
+
+        # upload doc
+        if file != None:
+            file_url = await upload_file(file, podcast_id)
+            podcast.file_url = file_url
+
+        session.add(podcast)
+        session.commit()
+        session.refresh(podcast)
+        # add to redis
+        push_redis(str(podcast_id))
+
+        podcast.created_at = str(podcast.created_at)
+        podcast.id = str(podcast.id)
+        return JSONResponse(
+            status_code=200,
+            content={
+                "success": True,
+                "message": "Generating podcast...😁",
+                "data": podcast.model_dump(),
+            },
+        )
+    except Exception as e:
+        return JSONResponse(
+            status_code=500,
+            content={"success": False, "message": "something went wrong", "data": ""},
+        )
 
 
 @app.post("/clerk-webhook")

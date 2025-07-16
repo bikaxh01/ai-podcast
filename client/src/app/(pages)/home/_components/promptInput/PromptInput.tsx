@@ -49,7 +49,7 @@ function PromptInput() {
       const res = await createPodcast(newForm);
       console.log(res);
 
-      // toast.success(res.message);
+      toast.success(res.message);
     } catch (error: any) {
       toast.error(error.message);
     } finally {
