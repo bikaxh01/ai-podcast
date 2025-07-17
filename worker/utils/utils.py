@@ -288,8 +288,10 @@ def get_final_content(project_data: ProjectData):
 class PodcastResponseFormat(BaseModel):
     """
     Use this output format
-    Host: [Beginner-friendly question or comment] Or
-    Guest: [Clear, detailed explanation with examples]
+    The Response should be in dict with keys
+     response:Host: [Beginner-friendly question or comment] Or Guest: [Clear, detailed explanation with examples]
+     title: string;
+     description:string
     """
 
     title: str = Field(description="short title for the podcast")
@@ -306,6 +308,9 @@ def generate_podcast_script(content: str):
 
 Your task is to convert the provided content into a natural, engaging podcast-style script featuring two speakers:
 
+Name of Production company 
+ - EchoMind (mention the name at beginning - Welcome to EchoMind podcast)
+  
 Host:
 - Curious, friendly, and relatable
 - Asks beginner-friendly questions
@@ -347,8 +352,8 @@ Content:
     )
 
     model_with_structure = model.with_structured_output(PodcastResponseFormat)
+
     chain = prompt | model_with_structure
-    parser = PydanticOutputParser(pydantic_object=PodcastResponseFormat)
     final_content = chain.invoke({"content": content})
     return final_content
 
@@ -403,4 +408,6 @@ def update_project(project_id: str, data: Any):
 
         return data["data"]
     else:
-        print(f"Request failed with status code: {response.status_code}")
+        error_msg = f"Request failed with status code: {response.status_code}"
+        print(error_msg)
+        raise Exception(error_msg)

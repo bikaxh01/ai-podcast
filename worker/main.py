@@ -26,7 +26,7 @@ load_dotenv()
 
 
 project_id = os.getenv("PROJECT_ID")
-
+print(project_id)
 
 async def main():
     try:
@@ -38,7 +38,9 @@ async def main():
         content = get_final_content(project_data)
         #  generate role based script
         podcast_script = generate_podcast_script(content)
-       
+        
+        
+        print(f"final project script {podcast_script} 🟢")
 
         files = await generate_podcast(podcast_script.response)
         final_media = merge_media_files(files, project_data["id"])

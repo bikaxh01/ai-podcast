@@ -5,8 +5,6 @@ import { createPodcast } from "@/handler/project-apis";
 import { useUser } from "@clerk/nextjs";
 import { ChevronRight, Plus } from "lucide-react";
 
-import { useRouter } from "next/navigation";
-
 import React, { useEffect, useRef, useState } from "react";
 
 import { toast } from "sonner";
@@ -17,7 +15,7 @@ function PromptInput() {
   const [disableSubmit, setSubmitDisable] = useState(false);
   const { user } = useUser();
   const [prompt, setPrompt] = useState("");
-  const router = useRouter();
+
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => {
@@ -47,8 +45,8 @@ function PromptInput() {
 
       // send file to backend
       const res = await createPodcast(newForm);
-      console.log(res);
-
+      setSelectedFile(null);
+      setPrompt("");
       toast.success(res.message);
     } catch (error: any) {
       toast.error(error.message);

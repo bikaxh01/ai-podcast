@@ -29,7 +29,7 @@ class Podcast(SQLModel, table=True):
     id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
     title: Optional[str] = None
     description: Optional[str] = None
-    status: Podcast_status = Field(default=Podcast_status.FAILED)
+    status: Podcast_status = Field(default=Podcast_status.PENDING)
     audio_url: Optional[str] = None
     file_url: Optional[str] = None
     prompt: Optional[str] = None
@@ -42,9 +42,7 @@ engine = create_engine(DB_URL)
 
 def connect_Db():
     try:
-        # Test the database connection
-        with engine.connect() as connection:
-            connection.execute("SELECT 1")
+        SQLModel.metadata.create_all(engine)
         print("DB Connected 🟢")
     except Exception as e:
         print(e)
