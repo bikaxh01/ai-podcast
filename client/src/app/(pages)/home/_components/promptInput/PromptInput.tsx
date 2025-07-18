@@ -9,7 +9,7 @@ import React, { useEffect, useRef, useState } from "react";
 
 import { toast } from "sonner";
 
-function PromptInput() {
+function PromptInput({refetch}:{refetch:()=>void}) {
   const [isInputActive, setIsInputActive] = useState(true);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [disableSubmit, setSubmitDisable] = useState(false);
@@ -47,6 +47,7 @@ function PromptInput() {
       const res = await createPodcast(newForm);
       setSelectedFile(null);
       setPrompt("");
+      refetch()
       toast.success(res.message);
     } catch (error: any) {
       toast.error(error.message);

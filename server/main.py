@@ -25,7 +25,7 @@ from utils.utils import upload_file, push_redis
 
 load_dotenv()
 app = FastAPI()
-
+CLIENT_URL = os.getenv("CLIENT_URL")
 
 app.add_middleware(
     CORSMiddleware,
@@ -55,7 +55,7 @@ async def validate_user(request: Request):
         request_state = clerk_sdk.authenticate_request(
             request,
             AuthenticateRequestOptions(
-                authorized_parties=["http://localhost:3000"],
+                authorized_parties=["http://localhost:3000" ,f"{CLIENT_URL}" ],
                 jwt_key=os.getenv("CLERK_JWT_KEY"),
             ),
         )

@@ -49,7 +49,9 @@ async function startJob(projectId: string) {
             restartPolicy: "Never",
           },
         },
+        backoffLimit:2
       },
+      
     },
   });
 }
