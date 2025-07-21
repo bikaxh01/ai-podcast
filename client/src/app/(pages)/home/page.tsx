@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
+
 "use client";
 import React, { useEffect, useState } from "react";
 import PromptInput from "./_components/promptInput/PromptInput";
@@ -17,7 +19,7 @@ function Home() {
       const data = await getPodcasts();
       console.log("🚀 ~ getData ~ data:", data);
       setPodcasts(data.data);
-    } catch (error: any) {
+    } catch (error:any) {
       setPodcasts([]);
     }
   };
