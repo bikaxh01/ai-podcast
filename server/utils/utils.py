@@ -51,5 +51,3 @@ async def upload_file(file: Annotated[UploadFile, File()], podcast_id: str):
 
 def push_redis (podcast_id: str):
     redis_client.lpush("podcast",podcast_id)
-    
-    

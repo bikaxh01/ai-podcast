@@ -1,0 +1,7 @@
+# Ignore common development artifacts and sensitive files
+node_modules/
+.git/
+.env
+*.log
+tmp/
+dist/

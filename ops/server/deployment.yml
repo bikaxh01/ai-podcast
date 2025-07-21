@@ -1,0 +1,26 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: server
+spec:
+  selector:
+    matchLabels:
+      app: server
+  template:
+    metadata:
+      labels:
+        app: server
+    spec:
+      volumes:
+        - name: server-secret
+          secret:
+            secretName: server-secret
+      containers:
+        - name: primary-server
+          image: bikaxh01/echomind-server:latest
+          volumeMounts:
+            - name: server-secret
+              mountPath: /app/.env
+              subPath: .env
+      
+      

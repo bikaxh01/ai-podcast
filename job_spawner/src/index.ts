@@ -56,11 +56,28 @@ async function startJob(projectId: string) {
   });
 }
 
-async function main() {
-  const redisClient = await createClient({
-    url: process.env.REDIS_URL,
-  }).connect();
+
+async function getRedisClient (){
   try {
+
+    console.log("👌👌",process.env.REDIS_URL)
+    const client = await createClient({
+      url: process.env.REDIS_URL,
+    }).connect()
+    console.log("🟢  connected to redis");
+    return  client
+  } catch (error) {
+    console.log("🔴🔴 Unable to connect to redis");
+    throw new Error("🔴🔴 Unable to connect to redis")
+    
+  }
+}
+
+async function main() {
+  
+  
+  try {
+    const redisClient = await getRedisClient()
     while (true) {
       const data = await redisClient.brPop("podcast", 0);
       if (!data?.element) return;
@@ -72,4 +89,4 @@ async function main() {
   }
 }
 
-main();
+  main();

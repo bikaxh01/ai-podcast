@@ -1,11 +1,10 @@
 fastapi[standard]
 sqlmodel
 python-dotenv
-psycopg2
+psycopg2-binary
 clerk-backend-api
 svix
 python-multipart
 cloudinary
 redis
 alembic
-psycopg2

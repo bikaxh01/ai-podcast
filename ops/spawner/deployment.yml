@@ -1,0 +1,26 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: job-spawner
+spec:
+  selector:
+    matchLabels:
+      app: spawner
+  template:
+    metadata:
+      labels:
+        app: spawner
+    spec:
+      volumes:
+        - name: spawner-volume
+          secret:
+            secretName: spawner-secret
+      containers:
+        - name: job-spawner
+          image: bikaxh01/echomind-spawner:latest
+          volumeMounts:
+            - name: spawner-volume
+              mountPath: /home/app/.env
+              subPath: .env
+      
+      

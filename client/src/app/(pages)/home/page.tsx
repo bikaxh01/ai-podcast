@@ -24,7 +24,7 @@ function Home() {
 
   return (
     <div className="  h-full w-full gap-7 flex-col  flex items-center justify-center">
-      <PromptInput refetch={getData} />
+      <PromptInput refetch={getData } />
       <History podcasts={podcasts} />
     </div>
   );
