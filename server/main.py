@@ -33,6 +33,7 @@ app.add_middleware(
     allow_credentials=True,
     allow_headers=["*"],
     allow_methods=["*"],
+    
 )
 
 
@@ -55,11 +56,10 @@ async def validate_user(request: Request):
         request_state = clerk_sdk.authenticate_request(
             request,
             AuthenticateRequestOptions(
-                authorized_parties=["http://localhost:3000" ,f"{CLIENT_URL}" ],
+                authorized_parties=["http://localhost:3000" ,CLIENT_URL ],
                 jwt_key=os.getenv("CLERK_JWT_KEY"),
             ),
         )
-
         if not request_state.is_signed_in:
             raise HTTPException(status_code=403, detail="Unauthorized")
 
@@ -68,7 +68,7 @@ async def validate_user(request: Request):
         request.state.user_id = user_id
 
     except Exception as e:
-
+        print(e)
         raise HTTPException(status_code=500, detail="Unauthorized")
 
 
@@ -187,7 +187,9 @@ async def save_user(request: Request, session: Session = Depends(get_session)):
 
         webhook_secret = os.getenv("CLERK_WEBHOOK_SECRET")
         wh = Webhook(webhook_secret)
+     
         payload = wh.verify(body, headers)["data"]
+     
 
         email = payload.get("email_addresses")[0].get("email_address")
         user_id = payload.get("id")
@@ -228,7 +230,7 @@ def update_podcast(
         print("ID", podcast_id)
         podcast_id = uuid.UUID(podcast_id)
         podcast = session.get(Podcast, podcast_id)
-        print("ID", podcast_id)
+       
         if not podcast:
             print(
                 "NOT found 🟢🟢🟢",
