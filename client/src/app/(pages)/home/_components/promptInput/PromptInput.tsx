@@ -2,14 +2,14 @@
 import { Button } from "@/components/ui/button";
 import { createPodcast } from "@/handler/project-apis";
 
-import { useUser } from "@clerk/nextjs";
+import { useAuth, useUser } from "@clerk/nextjs";
 import { ChevronRight, Plus } from "lucide-react";
 
 import React, { useEffect, useRef, useState } from "react";
 
 import { toast } from "sonner";
 
-function PromptInput({refetch}:{refetch:()=>void}) {
+function PromptInput({ refetch }: { refetch: () => void }) {
   const [isInputActive, setIsInputActive] = useState(true);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [disableSubmit, setSubmitDisable] = useState(false);
@@ -33,7 +33,7 @@ function PromptInput({refetch}:{refetch:()=>void}) {
   const handleActivate = (isActive: boolean) => {
     setIsInputActive(isActive);
   };
-
+  const { getToken } = useAuth();
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     try {
       e.preventDefault();
@@ -44,10 +44,11 @@ function PromptInput({refetch}:{refetch:()=>void}) {
       if (selectedFile) newForm.append("file", selectedFile);
 
       // send file to backend
-      const res = await createPodcast(newForm);
+      const token = await getToken();
+      const res = await createPodcast(newForm, token!);
       setSelectedFile(null);
       setPrompt("");
-      refetch()
+      refetch();
       toast.success(res.message);
     } catch (error: any) {
       toast.error(error.message);

@@ -6,10 +6,11 @@ import PromptInput from "./_components/promptInput/PromptInput";
 
 import History from "./_components/history/History";
 import { getPodcasts } from "@/handler/project-apis";
-
+import { useAuth } from "@clerk/nextjs";
 
 function Home() {
   const [podcasts, setPodcasts] = useState([]);
+  const { getToken } = useAuth();
 
   useEffect(() => {
     getData();
@@ -17,7 +18,8 @@ function Home() {
 
   const getData = async () => {
     try {
-      const data = await getPodcasts();
+      const token = await getToken();
+      const data = await getPodcasts(token!);
       setPodcasts(data.data);
     } catch (error: any) {
       setPodcasts([]);

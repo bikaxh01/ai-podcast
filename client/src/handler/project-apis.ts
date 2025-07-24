@@ -1,15 +1,17 @@
-"use server"
+
 
 import axios from "axios";
 import { BASE_URL } from "./user-apis";
-import { cookies } from "next/headers";
 
 
-export async function createPodcast(data: FormData) {
+
+export async function createPodcast(data: FormData,token:string) {
   console.log("🚀 ~ createPodcast ~ data:", data);
   try {
     const res = await axios.post(`${BASE_URL}/create-podcast`, data, {
-      withCredentials: true,
+     headers:{
+        Authorization: `Bearer ${token}`,
+      }
     });
 
     return res.data;
@@ -18,14 +20,12 @@ export async function createPodcast(data: FormData) {
   }
 }
 
-export async function getPodcasts() {
+export async function getPodcasts(token:string) {
   try {
-     const cookie = await cookies()
-     const token = await cookie.get("__session")
-     console.log("🚀 ~ getPodcasts ~ token:", token?.value)
+  
     const res = await axios.get(`${BASE_URL}/get-podcasts`, {
       headers:{
-        Authorization: `Bearer ${token?.value}`,
+        Authorization: `Bearer ${token}`,
       }
     });
     return res.data;
