@@ -8,13 +8,7 @@ import { useEffect } from "react";
 export default function Home() {
   useEffect(() => {
     const test = async () => {
-      const res = await axios.post(
-        `${BASE_URL}/create-podcast`,
-        {
-          prompt: "e",
-        },
-        { withCredentials: true }
-      );
+      const res = await axios.get(`${BASE_URL}/`);
       console.log("🚀 ~ test ~ res:", res);
     };
     test();
