@@ -6,6 +6,7 @@ spec:
   selector:
     app: server
   ports:
-  - port: 80
-    targetPort: 8000
-  type: LoadBalancer
+  -  protocol: TCP
+     port: 8000
+     targetPort: 8000
+  type: ClusterIP

@@ -10,9 +10,38 @@ const CLOUDINARY_API_KEY = process.env.CLOUDINARY_API_KEY as string;
 const CLOUDINARY_API_SECRET = process.env.CLOUDINARY_API_SECRET as string;
 const SERVER_URL = process.env.SERVER_URL as string;
 
+// K8s
+const K8S_SERVER_URL = process.env.K8S_SERVER_URL as string;
+const K8S_SERVER_NAME = process.env.K8S_SERVER_NAME as string;
+const K8S_USER_NAME = process.env.K8S_USER_NAME as string;
+const K8S_USER_TOKEN = process.env.K8S_USER_TOKEN as string;
+
+const cluster = {
+  name: K8S_SERVER_NAME,
+  server: K8S_SERVER_URL,
+  skipTLSVerify: true, // Add this to skip certificate verification
+};
+
+const user = {
+  name: K8S_USER_NAME,
+  token: K8S_USER_TOKEN,
+};
+
+const context = {
+  name: K8S_SERVER_NAME,
+  user: user.name,
+  cluster: K8S_SERVER_NAME,
+};
 
 const kc = new k8s.KubeConfig();
-kc.loadFromDefault();
+
+kc.loadFromOptions({
+  clusters: [cluster],
+  users: [user],
+  contexts: [context],
+  currentContext: context.name,
+});
+
 const k8sApi = kc.makeApiClient(k8s.BatchV1Api);
 
 async function startJob(projectId: string) {
@@ -51,11 +80,10 @@ async function startJob(projectId: string) {
         },
         backoffLimit:2
       },
-      
+
     },
   });
 }
-
 
 async function getRedisClient (){
   try {
@@ -69,13 +97,12 @@ async function getRedisClient (){
   } catch (error) {
     console.log("🔴🔴 Unable to connect to redis");
     throw new Error("🔴🔴 Unable to connect to redis")
-    
+
   }
 }
 
 async function main() {
-  
-  
+
   try {
     const redisClient = await getRedisClient()
     while (true) {
@@ -89,4 +116,6 @@ async function main() {
   }
 }
 
-  main();
+main();
+
+
