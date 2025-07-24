@@ -1,17 +1,14 @@
-
-
 import axios from "axios";
-import { BASE_URL } from "./user-apis";
 
+export const BASE_URL = process.env.NEXT_PUBLIC_SERVER_BASE_URL;
 
-
-export async function createPodcast(data: FormData,token:string) {
+export async function createPodcast(data: FormData, token: string) {
   console.log("🚀 ~ createPodcast ~ data:", data);
   try {
     const res = await axios.post(`${BASE_URL}/create-podcast`, data, {
-     headers:{
+      headers: {
         Authorization: `Bearer ${token}`,
-      }
+      },
     });
 
     return res.data;
@@ -20,13 +17,12 @@ export async function createPodcast(data: FormData,token:string) {
   }
 }
 
-export async function getPodcasts(token:string) {
+export async function getPodcasts(token: string) {
   try {
-  
     const res = await axios.get(`${BASE_URL}/get-podcasts`, {
-      headers:{
+      headers: {
         Authorization: `Bearer ${token}`,
-      }
+      },
     });
     return res.data;
   } catch (error: any) {

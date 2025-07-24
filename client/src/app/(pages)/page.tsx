@@ -1,6 +1,6 @@
 "use client";
 import { Button } from "@/components/ui/button";
-import { BASE_URL } from "@/handler/user-apis";
+import { BASE_URL } from "@/handler/project-apis";
 import axios from "axios";
 
 import { useEffect } from "react";
