@@ -29,7 +29,7 @@ CLIENT_URL = os.getenv("CLIENT_URL")
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=[CLIENT_URL],
     allow_credentials=True,
     allow_headers=["*"],
     allow_methods=["*"],
