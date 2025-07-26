@@ -6,7 +6,7 @@ import { UserButton, useUser } from "@clerk/nextjs";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 
-function Nav({ isLanding }: { isLanding: boolean }) {
+function Nav({ isLanding = false }: { isLanding: boolean }) {
   const { isSignedIn } = useUser();
 
   return (

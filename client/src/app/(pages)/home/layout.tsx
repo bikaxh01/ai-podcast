@@ -4,7 +4,7 @@ import Nav from "./_components/Nav";
 function layout({ children }: { children: React.ReactNode }) {
   return (
     <div>
-      <Nav />
+      <Nav isLanding={false} />
       {children}
     </div>
   );
