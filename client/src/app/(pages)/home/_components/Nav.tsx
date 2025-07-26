@@ -2,13 +2,12 @@
 import React from "react";
 import Image from "next/image";
 
-import {  UserButton, useUser } from "@clerk/nextjs";
+import { UserButton, useUser } from "@clerk/nextjs";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 
-function Nav() {
-  const { isSignedIn,  } = useUser();
-
+function Nav({ isLanding }: { isLanding: boolean }) {
+  const { isSignedIn } = useUser();
 
   return (
     <div className=" items-center justify-between  h-fit w-full  py-3 px-4   rounded-md flex   gap-2 ">
@@ -23,14 +22,26 @@ function Nav() {
         <span className="  font-semibold text-2xl  ">EchoMind</span>
       </div>
       {isSignedIn ? (
-        <UserButton />
+        <>
+          <div className=" flex space-x-4">
+            {isLanding && (
+              <Link
+                href={"/home"}
+                className=" border-primary rounded-4xl px-4 py-2 border"
+              >
+                Dashboard
+              </Link>
+            )}
+            <UserButton />
+          </div>
+        </>
       ) : (
         <div className=" flex  space-x-4">
           <Link href={"/auth/sign-in"}>
-            <Button variant={"outline"}>Sign-In</Button>
+            <Button >Sign-In</Button>
           </Link>
           <Link href={"/auth/sign-up"}>
-            <Button variant={"outline"}>Sign-Up</Button>
+            <Button >Sign-Up</Button>
           </Link>
         </div>
       )}
