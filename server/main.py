@@ -33,7 +33,6 @@ app.add_middleware(
     allow_credentials=True,
     allow_headers=["*"],
     allow_methods=["*"],
-    
 )
 
 
@@ -56,7 +55,7 @@ async def validate_user(request: Request):
         request_state = clerk_sdk.authenticate_request(
             request,
             AuthenticateRequestOptions(
-                authorized_parties=["http://localhost:3000" ,CLIENT_URL ],
+                authorized_parties=["http://localhost:3000", CLIENT_URL],
                 jwt_key=os.getenv("CLERK_JWT_KEY"),
             ),
         )
@@ -101,16 +100,18 @@ def get_project_by_id(podcast_id: str, session: Session = Depends(get_session)):
     )
 
 
-@app.get(
-    "/get-podcasts", dependencies=[Depends(validate_user)]
-)
+@app.get("/get-podcasts", dependencies=[Depends(validate_user)])
 async def get_podcast(request: Request, session: Session = Depends(get_session)):
     try:
         user_id = request.state.user_id
 
-        statement = select(Podcast).where(
-            (Podcast.status != Podcast_status.FAILED) & (Podcast.user_id == user_id)
-        ).order_by(Podcast.created_at.desc())
+        statement = (
+            select(Podcast)
+            .where(
+                (Podcast.status != Podcast_status.FAILED) & (Podcast.user_id == user_id)
+            )
+            .order_by(Podcast.created_at.desc())
+        )
 
         result = session.exec(statement).all()
 
@@ -187,9 +188,8 @@ async def save_user(request: Request, session: Session = Depends(get_session)):
 
         webhook_secret = os.getenv("CLERK_WEBHOOK_SECRET")
         wh = Webhook(webhook_secret)
-     
+
         payload = wh.verify(body, headers)["data"]
-     
 
         email = payload.get("email_addresses")[0].get("email_address")
         user_id = payload.get("id")
@@ -197,10 +197,27 @@ async def save_user(request: Request, session: Session = Depends(get_session)):
         image_url = payload.get("image_url")
 
         user = User(
-            id=user_id, email=email, first_name=first_name, avatar_url=image_url
+            id=user_id,
+            email=email,
+            first_name=first_name,
+            avatar_url=image_url,
         )
         session.add(user)
+        session.commit()  # Commit user first so user_id exists
+
+        podcast_id = uuid.uuid4()
+        podcast = Podcast(
+            id=podcast_id,
+            user_id=user_id,
+            prompt="initial",
+            audio_url="https://res.cloudinary.com/bikash01/video/upload/v1753377384/EchoMind/7b12f25c-7737-40a9-8d80-6c13e78e55a1/7b12f25c-7737-40a9-8d80-6c13e78e55a1_final.wav",
+            status=Podcast_status.COMPLETED,
+            title="Understanding Web3: The Next Generation of the Internet",
+            description="An insightful discussion on the evolution of the internet, from Web1 to the emerging Web3, exploring its core principles, technologies, and real-world examples."
+        )
+        session.add(podcast)
         session.commit()
+
         return JSONResponse(
             status_code=201, content={"status": "true", "message": "Created"}
         )
@@ -230,7 +247,7 @@ def update_podcast(
         print("ID", podcast_id)
         podcast_id = uuid.UUID(podcast_id)
         podcast = session.get(Podcast, podcast_id)
-       
+
         if not podcast:
             print(
                 "NOT found 🟢🟢🟢",
